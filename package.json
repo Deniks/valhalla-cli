@@ -1,0 +1,8 @@
+{
+  "name": "cloud-notes",
+  "version": "1.0.0",
+  "description": "This app alows you create notes and access to them in any point of the world! ",
+  "main": "index.js",
+  "author": "Denis",
+  "license": "MIT"
+}
