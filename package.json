@@ -4,5 +4,12 @@
   "description": "This app alows you create notes and access to them in any point of the world! ",
   "main": "index.js",
   "author": "Denis",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "3.0.0",
+    "commander": "^2.19.0",
+    "dotenv": "^7.0.0",
+    "inquirer": "^6.2.2",
+    "mongoose": "^5.4.20"
+  }
 }
