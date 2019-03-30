@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const Schema = mongoose.Schema;
 
@@ -12,5 +13,6 @@ const UserSchema = new Schema({
       required: true,
     }
 });
+
 
 const User = module.exports = mongoose.model('User', UserSchema);

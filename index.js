@@ -1,5 +1,7 @@
-const program = require('commander');
+#!/user/bin/env node
 
+const program = require('commander');
+const { prompt } = require('inquirer'); 
 const { addUser, getUser, loginUser } = require('./logic');
 
 program
