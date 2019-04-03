@@ -5,6 +5,7 @@ const assert = require('assert');
 const bcrypt = require('bcrypt');
 const fs = require('fs');
 const CLI = require('clui');
+const Progress = CLI.Progress;
 const Spinner = CLI.Spinner;
 
 mongoose.Promise = global.Promise;
@@ -78,7 +79,7 @@ const connectToCloud = (cloud) => {
       bcrypt.compare(cloud.password, cloudData.password, (err, result) => {
         if (result === true) {
           cloud.insideCloud = true;
-          createCookie(cloud);
+          //createCookie(cloud);
           console.log('loginned!!!');
           return resolve(cloudData);
         } else {
@@ -115,39 +116,66 @@ class File {
 
   }
 
-  upload() {
-      const { filename } = this;
-      const writeStream = this.gridFSBucket.openUploadStream({ filename });
-      fs.createReadStream(this.filePath).pipe(writeStream);
+  upload(pull) {
+      const { filename, filePath } = this;
+
+
+      const writeStream = this.gridFSBucket.openUploadStream({ filename }).once('finish', () => {
+        let down
+      })
+      
+      fs.createReadStream(filePath).pipe(writeStream);
       return new Promise((resolve, reject) => {
         writeStream.on('close', (file) => {
           Cloud.findById(cloudId, (err, cloud) => {
-            cloud.file = file._id;
+            cloud.fileID = file._id;
+            console.log(cloud)
+
             cloud.save((err, updatedCloud) => {
               if (err) {
                 reject(err);
               }
+              console.info(updatedCloud, file)
               return resolve(JSON.stringify(updatedCloud));
             })
           })
+        }).on('finish', () => {
+          if (pull) fs.unlinkSync(filePath);
+          console.info('File uploaded!');
+          process.exit();
         })
       })
       .catch(err => console.log('caught ', err));
 
   }
-  download() {
-    const { gridFSBucket, cloudId } = this;
+
+  download(pull) {
+    const { gridFSBucket, cloudId, filename, filePath } = this;
+    console.info('active')
     /*
     const readstream = (filename, stream) => 
       fs.createReadStream(__dirname + filename)
       .pipe(stream);*/
-    let cloudFiles = db.collection('cloud-files.chunks');
-    cloudFiles.find({ files_id: cloudId });
-    console.info(cloudFiles);
-    let readstream = gridFSBucket.openDownloadStream({
-      _id: cloudId
-    })
-    return readstream.pipe();
+
+    let readstream = gridFSBucket.openDownloadStreamByName({filename});
+  
+    return readstream
+      .pipe(fs.createWriteStream(filePath))
+      .on('error', (error) => {
+        console.info(": : : error");
+        assert.ifError(error);
+      })
+      .on('finish', () => {
+        let thisProgressBar = new Progress(20);
+        console.log(thisProgressBar.update(10, 30));
+        if (pull) {
+          gridFSBucket.delete(readstream.id, (err) => {
+            assert.equal(err, null);
+          })
+        }
+        console.info('done!');
+        process.exit();
+      })
     //return readstream('./LICENSE', uploadstream)
   }
 };

@@ -1,0 +1,3 @@
+five="*****"
+two="*   *"
+print(five, two, two, two, five, sep="\n")

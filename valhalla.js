@@ -1,4 +1,5 @@
 #!/user/bin/env node
+'use strict';
 
 require('dotenv').config();
 
@@ -19,6 +20,7 @@ program
   .description('Contact managment system')
   .option('-u, --upload', 'Upload file')
   .option('-d, --download', 'Download file')
+  .option('-p, --pull', 'Pull the file from directory or cloud')
   .parse(process.argv);
 
 program
@@ -66,7 +68,8 @@ program
     scriptLogo();
     prompt(cloud_questions)
       .then(answers => connectToCloud(answers))
-
+      .then(() => prompt(file_list)
+      .then(answers => console.info(answers)))
   });
 
 program
@@ -78,10 +81,10 @@ program
     prompt(cloud_questions)
       .then(answers => connectToCloud(answers))
       .then(cloud => {
-        console.info(program.upload ? 'upload' : 'download')
-        return program.upload ? 
-          new File(cloud._id, filePath).upload()
-          : new File(cloud._id, filePath).download()
+        const { upload, pull } = program;
+        return upload ? 
+          new File(cloud._id, filePath).upload(pull ? true : false)
+          : new File(cloud._id, filePath).download(pull ? true : false)
       })
       .catch(err => console.log('caught', err))
 });

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-const Schema = mongoose.Schema;
+const { Schema } = mongoose;
 
 const CloudSchema = new Schema({
     cloudIp: {
@@ -12,9 +12,8 @@ const CloudSchema = new Schema({
       type: String,
       required: true,
     },
-    insideCloud: {
-      type: Boolean,
-      default: false,
+    fileID: {
+      type: Schema.Types.ObjectId
     }
 });
 

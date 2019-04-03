@@ -11,9 +11,7 @@ const options = [
     {
       name: 'files',
       type: 'checkbox',
-      choices: (choices) => {
-        return choices;
-      }
+      choices: ['denis', 'gleb', 'vasya', 'karim']
     }
   ]
   
