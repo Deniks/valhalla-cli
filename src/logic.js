@@ -48,7 +48,7 @@ const createCloud = (cloud) => {
             return next(err);
           }
           cloud.password = hash;
-          cloud.insideCloud = true;
+
           console.log(cloud);
           Cloud.create(cloud, (err) => {
             assert.equal(null, err);
@@ -78,7 +78,6 @@ const connectToCloud = (cloud) => {
       }
       bcrypt.compare(cloud.password, cloudData.password, (err, result) => {
         if (result === true) {
-          cloud.insideCloud = true;
           //createCookie(cloud);
           console.log('loginned!!!');
           return resolve(cloudData);
@@ -88,7 +87,39 @@ const connectToCloud = (cloud) => {
         }
       })
     });
-  });
+  })
+  .then((data) =>  {
+    const files = data.files.map(file => {
+
+      let readstream = gridFSBucket.openDownloadStreamById(file);
+      console.log(readstream)
+        eadstream
+          .pipe(fs.createWriteStream(filePath))
+          .on('error', (error) => {
+            console.info(": : : error");
+            assert.ifError(error);
+          })
+          .on('finish', () => {
+            let thisProgressBar = new Progress(20);
+            console.log(thisProgressBar.update(10, 30));
+            if (pull) {
+              gridFSBucket.delete(readstream.id, (err) => {
+                assert.equal(err, null);
+              })
+              Cloud.update({_id: cloudId}, { $pullAll: { files: [readstream._id] } })
+            }
+            console.info('done!');
+            process.exit();
+          })
+
+
+      console.log(file)
+      console.log(db.collection('cloud-files.files'))
+      const filesQuery = db.collection('cloud-files.files').find({ _id: file });
+      console.log(filesQuery)
+    });
+    
+  })
 };
 
 const getUser = (username) => {
@@ -117,48 +148,34 @@ class File {
   }
 
   upload(pull) {
-      const { filename, filePath } = this;
+      const { filename, filePath, cloudId } = this;
 
 
       const writeStream = this.gridFSBucket.openUploadStream({ filename }).once('finish', () => {
         let down
-      })
+      });
       
       fs.createReadStream(filePath).pipe(writeStream);
-      return new Promise((resolve, reject) => {
-        writeStream.on('close', (file) => {
-          Cloud.findById(cloudId, (err, cloud) => {
-            cloud.fileID = file._id;
-            console.log(cloud)
-
-            cloud.save((err, updatedCloud) => {
-              if (err) {
-                reject(err);
-              }
-              console.info(updatedCloud, file)
-              return resolve(JSON.stringify(updatedCloud));
-            })
-          })
-        }).on('finish', () => {
+      writeStream.on('finish', (file) => {
+        Cloud.findOneAndUpdate(cloudId, {
+          "$push": {
+            files: file._id
+          },
+        }, (err, updatedCloud) => {
+          if (err) assert(err);
           if (pull) fs.unlinkSync(filePath);
           console.info('File uploaded!');
+          console.log(updatedCloud);
           process.exit();
-        })
-      })
-      .catch(err => console.log('caught ', err));
-
+        });
+      });
   }
 
   download(pull) {
     const { gridFSBucket, cloudId, filename, filePath } = this;
     console.info('active')
-    /*
-    const readstream = (filename, stream) => 
-      fs.createReadStream(__dirname + filename)
-      .pipe(stream);*/
-
     let readstream = gridFSBucket.openDownloadStreamByName({filename});
-  
+  console.log(readstream)
     return readstream
       .pipe(fs.createWriteStream(filePath))
       .on('error', (error) => {
@@ -172,6 +189,7 @@ class File {
           gridFSBucket.delete(readstream.id, (err) => {
             assert.equal(err, null);
           })
+          Cloud.update({_id: cloudId}, { $pullAll: { files: [readstream._id] } })
         }
         console.info('done!');
         process.exit();
@@ -182,18 +200,3 @@ class File {
 
 
 module.exports = { createCloud, connectToCloud, getUser, File };
-
-
-
-
-
-/* 
-
-      fs.unlink(filePath, (err) => {
-        // handle error
-        console.log('Done ...')
-      })
-
-      use if you want pull file from pc to cloud
-
-*/

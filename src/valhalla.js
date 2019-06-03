@@ -68,8 +68,13 @@ program
     scriptLogo();
     prompt(cloud_questions)
       .then(answers => connectToCloud(answers))
-      .then(() => prompt(file_list)
-      .then(answers => console.info(answers)))
+      .then((res) => {
+        console.log(res.files); 
+        let fq =  file_list(res.files);
+        console.log(fq)
+        prompt(file_list(["5cae3c12eb10f310e4a25b44","5cae3c73f1b8e812142aa8e5","5cae3c8ec12a5a12226f22d9","5cae3c952273b9122d24debf"]))
+      })
+      .then(answers => console.info(answers))
   });
 
 program

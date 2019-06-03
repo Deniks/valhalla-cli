@@ -12,9 +12,7 @@ const CloudSchema = new Schema({
       type: String,
       required: true,
     },
-    fileID: {
-      type: Schema.Types.ObjectId
-    }
+    files: [],
 });
 
 

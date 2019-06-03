@@ -7,14 +7,16 @@ const options = [
     }
   ]
   
-  const file_list = [
-    {
-      name: 'files',
-      type: 'checkbox',
-      choices: ['denis', 'gleb', 'vasya', 'karim']
-    }
-  ]
-  
+  const file_list = (data) => (
+    [
+      {
+        name: 'files',
+        type: 'checkbox',
+        choices: data
+      }
+    ]
+  );
+
   const cloud_questions = [
       {
           name: 'cloudIp',
