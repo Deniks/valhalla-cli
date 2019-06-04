@@ -1,3 +1,5 @@
+const Cloud = require('../models/cloudSchema');
+
 exports.getUser = (username) => {
     const search = new RegExp(username, 'i');
     Cloud.find({$or: [{cloudIp: search}]})

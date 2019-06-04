@@ -1,3 +1,7 @@
+const Cloud = require('../models/cloudSchema');
+
+const bcrypt = require('bcrypt')
+
 exports.createCloud = (cloud) => {
 
     const search = new RegExp(cloud.cloudIp, 'i');

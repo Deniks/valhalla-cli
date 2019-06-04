@@ -3,30 +3,53 @@
 
 require('dotenv').config();
 
-
+const mongoose = require('mongoose');
 const program = require('commander');
 const { prompt } = require('inquirer'); 
 const inquirer = require('inquirer'); 
 const clear = require('clear');
 const scriptLogo = require('./logo');
 
-const { createCloud, connectToCloud, File, getUser } = require('./logic');
+const { createCloud, connectToCloud } = require('./controllers/cloudController');
+const { File } = require('./controllers/fileController');
+const { getUser } = require('./controllers/userController');
+
 const { options, file_list, cloud_questions } = require('./questions');
+
+
+mongoose.Promise = global.Promise;
+
+mongoose.connect(process.env.MONGODB_URI,  { 
+  useNewUrlParser: true 
+  }
+);
+let db = mongoose.connection;
+
+db.once('opne', () => console.info('Connected to mongodb'))
+
+db.on('error', (err) => {
+  console.log(`An error occured ==> ${err}`);
+})
 
 
 
 program
   .version('0.0.1')
   .description('Contact managment system')
-  .option('-u, --upload', 'Upload file')
+  .option('-u, .--upload', 'Upload file')
   .option('-d, --download', 'Download file')
   .option('-p, --pull', 'Pull the file from directory or cloud')
+  .option('--wizard', 'To activate interactive cli')
   .parse(process.argv);
 
+console.log(process.argv.length)
+if (process.argv.length < 3) {
+  scriptLogo();
+  program.help();
+}
 program
-  .command('launch')
-  .alias('l')
-  .description('Launch the script')
+  .command('--wizard')
+  .description('Interactive wizard')
   .action(() => {
     scriptLogo();
     prompt(options).then(answers => {

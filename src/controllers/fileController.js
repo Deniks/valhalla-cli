@@ -1,4 +1,6 @@
-exports.File = (cloud, filePath) {
+const Cloud = require('../models/cloudSchema');
+
+exports.File = (cloud, filePath) => {
     this.cloudId = cloud._id;
     this.filePath = filePath;
     this.filename = filePath.replace(/^.*[\\\/]/, '');
